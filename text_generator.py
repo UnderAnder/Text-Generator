@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import Counter
 from nltk.util import bigrams
 from nltk.tokenize import WhitespaceTokenizer
 
@@ -10,10 +10,7 @@ def markov_chain(tokens):
     for head, tail in bigrams(tokens):
         simple_model.setdefault(head, []).append(tail)
     for head, tail in simple_model.items():
-        freq_dict = defaultdict(int)
-        for word in tail:
-            freq_dict[word] += 1
-        model.setdefault(head, {}).update(freq_dict)
+        model.setdefault(head, {}).update(Counter(tail))
     return model
 
 def corpus_statistic(tokens):
