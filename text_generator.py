@@ -1,17 +1,17 @@
-from collections import Counter
-from nltk.util import bigrams
+from collections import Counter, defaultdict
+from random import choices
+
 from nltk.tokenize import WhitespaceTokenizer
+from nltk.util import bigrams
 
 
 def markov_chain(tokens):
-    simple_model = {}
-    model = {}
-
+    model = defaultdict(Counter)
     for head, tail in bigrams(tokens):
-        simple_model.setdefault(head, []).append(tail)
-    for head, tail in simple_model.items():
-        model.setdefault(head, {}).update(Counter(tail))
+        model[head][tail] += 1
+
     return model
+
 
 def corpus_statistic(tokens):
     print('Corpus statistics')
@@ -25,21 +25,16 @@ def main():
 
     model = markov_chain(tokens)
 
-    while True:
-        command = input().strip()
-        if command == 'exit':
-            exit()
-        try:
-            print('Head:', command)
-            print('\n'.join(f'Tail: {w} Count: {c}' for w, c in model[command].items()))
-        except (TypeError, ValueError):
-            print('Type Error. Please input an integer.')
-        except IndexError:
-            print('Index Error. Please input an integer that is in the range of the corpus.')
-        except (KeyError, AttributeError):
-            print('The requested word is not in the model. Please input another word.')
-        else:
-            continue
+    # make 10 sequence of 10 words
+    for _ in range(10):
+        # first word
+        seq = choices(list(model.keys()))
+
+        for i in range(9):
+            weights = [w for _, w in model[seq[i]].most_common()]
+            next_word = choices(list(model[seq[i]]), weights)
+            seq.extend(next_word)
+        print(*seq)
 
 
 if __name__ == '__main__':
