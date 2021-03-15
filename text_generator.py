@@ -1,5 +1,6 @@
 from collections import Counter, defaultdict
 from random import choices
+from re import fullmatch
 
 from nltk.tokenize import WhitespaceTokenizer
 from nltk.util import bigrams
@@ -24,16 +25,22 @@ def main():
         tokens = WhitespaceTokenizer().tokenize(f.read())
 
     model = markov_chain(tokens)
+    first_word_pattern = r"[A-Z][\w\d']*"
+    end_word_pattern = r"[\S]*[.!?]"
 
-    # make 10 sequence of 10 words
+    # make 10 sequence
     for _ in range(10):
-        # first word
+        # first capitalized word and don't ends with a sentence-ending punctuation mark
         seq = choices(list(model.keys()))
-
-        for i in range(9):
-            weights = [w for _, w in model[seq[i]].most_common()]
+        while not fullmatch(first_word_pattern, seq[0]):
+            seq = choices(list(model.keys()))
+        # minimal sentence length 5 tokens, with a sentence-ending punctuation mark
+        for i in range(100):
+            weights = [w for w in model[seq[i]].values()]
             next_word = choices(list(model[seq[i]]), weights)
             seq.extend(next_word)
+            if i > 2 and fullmatch(end_word_pattern, next_word[0]):
+                break
         print(*seq)
 
 
